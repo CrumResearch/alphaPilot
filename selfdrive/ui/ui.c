@@ -2199,6 +2199,9 @@ int is_leon() {
 
 
 int main(int argc, char* argv[]) {
+  
+	
+	
   int err;
   setpriority(PRIO_PROCESS, 0, -14);
 
@@ -2234,7 +2237,14 @@ int main(int argc, char* argv[]) {
     LOGW(error);
     exit(1);
   }
+  // Debug purposes
 
+  bool debugmode = true;
+
+  if (debugmode == true) {
+	  printf("Debug mode is activated");
+	  ui_draw_track(s, true, &s->track_vertices[1]);
+  }
   // light sensor scaling params
   const int LEON = is_leon();
 
@@ -2264,7 +2274,8 @@ int main(int argc, char* argv[]) {
     smooth_brightness = clipped_brightness * 0.01 + smooth_brightness * 0.99;
     if (smooth_brightness > 255) smooth_brightness = 255;
     set_brightness(s, (int)smooth_brightness);
-
+	
+	
     if (!s->vision_connected) {
       // Car is not started, keep in idle state and awake on touch events
       zmq_pollitem_t polls[1] = {{0}};
@@ -2283,7 +2294,9 @@ int main(int argc, char* argv[]) {
       }
     } else {
       // Car started, fetch a new rgb image from ipc and peek for zmq events.
-      ui_update(s);
+		// This should look like car is started for debug purposes
+		
+		ui_update(s);
       if(!s->vision_connected) {
         // Visiond process is just stopped, force a redraw to make screen blank again.
         ui_draw(s);
@@ -2297,6 +2310,7 @@ int main(int argc, char* argv[]) {
     } else {
       set_awake(s, false);
     }
+	
     // Don't waste resources on drawing in case screen is off or car is not started.
     if (s->awake && s->vision_connected) {
       ui_draw(s);

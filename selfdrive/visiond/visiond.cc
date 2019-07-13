@@ -1315,7 +1315,7 @@ void party(VisionState *s, bool nomodel) {
 
 int main(int argc, char **argv) {
   int err;
-
+  printf("Working in experimental mode");
   zsys_handler_set(NULL);
   signal(SIGINT, (sighandler_t)set_do_exit);
   signal(SIGTERM, (sighandler_t)set_do_exit);
