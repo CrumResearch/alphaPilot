@@ -3,6 +3,7 @@
 #include "common/util.h"
 #include "snpemodel.h"
 
+
 void PrintErrorStringAndExit() {
   const char* const errStr = zdl::DlSystem::getLastErrorString();
   std::cerr << zdl::DlSystem::getLastErrorString() << std::endl;
@@ -21,7 +22,7 @@ SNPEModel::SNPEModel(const char *path, float *output, size_t output_size) {
   std::unique_ptr<zdl::DlContainer::IDlContainer> container = zdl::DlContainer::IDlContainer::open(model_data, model_size);
   if (!container) { PrintErrorStringAndExit(); }
   printf("loaded model with size: %u\n", model_size);
-  printf("Running in experimental mode\n");
+  
 
   // create model runner
   zdl::SNPE::SNPEBuilder snpeBuilder(container.get());
