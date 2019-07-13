@@ -1,1 +1,2 @@
 visiond runs the openpilot/chffrplus vision pipeline. Everything running between the camera hardware and model outputs lives here.
+For more info and how to contribute. Check cameras/README.md file.
