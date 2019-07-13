@@ -88,6 +88,8 @@ CameraInfo cameras_supported[CAMERA_ID_MAX] = {
     .bayer_flip = 3,
     .hdr = true
   },
+
+	//TODO: Expand this to more camera models. Especially new OnePlus phones
   [CAMERA_ID_OV10640] = {
     .frame_width = 1280,
     .frame_height = 1080,
