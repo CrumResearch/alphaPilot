@@ -1,0 +1,7 @@
+##How to build:
+```
+source build/envsetup.sh
+breakfast oneplus3
+brunch oneplus3
+
+```
