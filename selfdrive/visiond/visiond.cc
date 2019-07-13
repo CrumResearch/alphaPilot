@@ -1042,7 +1042,6 @@ namespace {
 					zmq_send(s->recorder_sock_raw, bytes.begin(), bytes.size(), ZMQ_DONTWAIT);
 				}
 			}
-
 			// push the frame to the posenet
 			// TODO: This doesn't always have to run
 			double pt1 = 0, pt2 = 0, pt3 = 0;
