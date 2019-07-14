@@ -1041,8 +1041,10 @@ static void ui_draw_vision_lanes(UIState* s) {
 	}
 	// Draw vision path
 	ui_draw_track(s, false, &s->track_vertices[0]);
-	if (scene->engaged) {
+	bool mpcdebug = true;
+	if (mpcdebug == true) {
 		// Draw MPC path when engaged
+		printf("MPC debug successfully enabled\n");
 		ui_draw_track(s, true, &s->track_vertices[1]);
 	}
 }
@@ -1054,10 +1056,9 @@ static void ui_draw_world(UIState* s) {
 		return;
 	}
 
-	if ((nanos_since_boot() - scene->model_ts) < 1000000000ULL) {
-		// Draw lane edges and vision/mpc tracks
-		ui_draw_vision_lanes(s);
-	}
+	// Draw lane edges and vision/mpc tracks
+	ui_draw_vision_lanes(s);
+
 
 	if (scene->lead_status) {
 		// Draw lead car indicator
@@ -1264,13 +1265,13 @@ static void ui_draw_vision_speedlimit(UIState* s) {
 		nvgFillColor(s->vg, nvgRGBA(0, 0, 0, 255));
 	}
 	if (is_speedlim_valid) {
-		snprintf(speedlim_str, sizeof(speedlim_str), "%d", speedlim_calc);
+		snprintf(speedlim_str, sizeof(speedlim_str), "%d", 100);
 		nvgText(s->vg, viz_speedlim_x + viz_speedlim_w / 2, viz_speedlim_y + (is_speedlim_valid ? 170 : 165), speedlim_str, NULL);
 	}
 	else {
 		nvgFontFace(s->vg, "sans-semibold");
 		nvgFontSize(s->vg, 42 * 2.5);
-		nvgText(s->vg, viz_speedlim_x + viz_speedlim_w / 2, viz_speedlim_y + (is_speedlim_valid ? 170 : 165), "N/A", NULL);
+		nvgText(s->vg, viz_speedlim_x + viz_speedlim_w / 2, viz_speedlim_y + (is_speedlim_valid ? 170 : 165), "100", NULL);
 	}
 }
 
@@ -1304,10 +1305,10 @@ static void ui_draw_vision_speed(UIState* s) {
 	nvgFillColor(s->vg, nvgRGBA(255, 255, 255, 200));
 
 	if (s->is_metric) {
-		nvgText(s->vg, viz_speed_x + viz_speed_w / 2, 320, "kph", NULL);
+		nvgText(s->vg, viz_speed_x + viz_speed_w / 2, 320, "debugmiles", NULL);
 	}
 	else {
-		nvgText(s->vg, viz_speed_x + viz_speed_w / 2, 320, "mph", NULL);
+		nvgText(s->vg, viz_speed_x + viz_speed_w / 2, 320, "debugmiles", NULL);
 	}
 }
 
@@ -1341,7 +1342,7 @@ static void ui_draw_vision_event(UIState* s) {
 		const int img_wheel_x = bg_wheel_x - (img_wheel_size / 2);
 		const int img_wheel_y = bg_wheel_y - 25;
 		float img_wheel_alpha = 0.1f;
-		bool is_engaged = (s->status == STATUS_ENGAGED);
+		bool is_engaged = true;
 		bool is_warning = (s->status == STATUS_WARNING);
 		bool is_engageable = scene->engageable;
 		if (is_engaged || is_warning || is_engageable) {
@@ -1543,9 +1544,10 @@ static void ui_draw_vision(UIState* s) {
 	nvgScissor(s->vg, ui_viz_rx, box_y, ui_viz_rw, box_h);
 	nvgTranslate(s->vg, ui_viz_rx + ui_viz_ro, box_y + (box_h - inner_height) / 2.0);
 	nvgScale(s->vg, (float)viz_w / s->fb_w, (float)inner_height / s->fb_h);
-	if (!scene->frontview && !scene->fullview) {
-		ui_draw_world(s);
-	}
+	// Debug world
+
+	ui_draw_world(s);
+
 
 	nvgRestore(s->vg);
 
@@ -1572,10 +1574,13 @@ static void ui_draw_blank(UIState* s) {
 }
 
 static void ui_draw(UIState* s) {
-	if (s->vision_connected && s->plus_state == 0) {
+	// debug vision
+	bool debugvision = true;
+	if (debugvision == true) {
 		ui_draw_vision(s);
 	}
 	else {
+		printf("Drawing blank");
 		ui_draw_blank(s);
 	}
 
@@ -1746,7 +1751,9 @@ void handle_message(UIState* s, void* which) {
 		else if (datad.alertStatus == cereal_ControlsState_AlertStatus_critical) {
 			update_status(s, STATUS_ALERT);
 		}
-		else if (datad.enabled) {
+		// Engage with debug mode 
+		bool engagedebug = true;
+		if (engagedebug == true) {
 			update_status(s, STATUS_ENGAGED);
 		}
 		else {
@@ -1957,7 +1964,7 @@ static void ui_update(UIState* s) {
 			LOGW("poll failed (%d)", ret);
 			close(s->ipc_fd);
 			s->ipc_fd = -1;
-			s->vision_connected = false;
+			s->vision_connected = true;
 			return;
 		}
 		else if (ret == 0)
@@ -1969,7 +1976,7 @@ static void ui_update(UIState* s) {
 			LOGW("vision disconnected");
 			close(s->ipc_fd);
 			s->ipc_fd = -1;
-			s->vision_connected = false;
+			s->vision_connected = true;
 			return;
 		}
 		if (rp.type == VIPC_STREAM_ACQUIRE) {
@@ -2338,6 +2345,7 @@ int main(int argc, char* argv[]) {
 				if (touched == 1) {
 					set_awake(s, true);
 				}
+
 			}
 		}
 		else {
@@ -2358,8 +2366,13 @@ int main(int argc, char* argv[]) {
 			set_awake(s, false);
 		}
 		// Don't waste resources on drawing in case screen is off or car is not started.
-		if (s->awake && s->vision_connected) {
+		bool debugdrawer = true;
+		if (debugdrawer == true) {
+			printf("Hello World from vision\n");
+
 			ui_draw(s);
+			ui_draw_vision_lanes(s);
+
 			glFinish();
 			should_swap = true;
 #ifdef DEBUG_FPS
